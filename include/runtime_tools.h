@@ -13,6 +13,6 @@ void display_edit_mode(LinkedList<char> &inputList, bool mode);
 
 long set_timer_time(LinkedList<char> &inputList);
 
-void ringBell();
+void ringBell(bool mode);
 
 #endif

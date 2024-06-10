@@ -25,8 +25,8 @@ void reset_list(){
 
 void set_alarm_time(LinkedList<char> &inputList){ // alarm
   LinkedList<int> alarm_time_set;
-  int alarm_set_hour = 0;
-  int alarm_set_minute = 0;
+  alarm_set_hour = 0;
+  alarm_set_minute = 0;
   
   if (inputList.get(2) != '_') { // _ : HH : MM
     alarm_set_hour += (inputList.get(2) - '0');
@@ -90,7 +90,7 @@ void loop() {
         timer_active = true;
       }
       if (timer_active && timer_time_set <= epochTime){
-        ringBell();
+        ringBell(clkMode);
         timer_time_set = 0;
         timer_active = false;
       }
@@ -98,21 +98,22 @@ void loop() {
       if (inputList.get(4) != '_' && alarm_set_hour == -1){
         set_alarm_time(inputList); 
         alarm_active = true;
+      }
+      if (alarm_active){
+        DateTime now = rtc.now();
         Serial.print("set time --> ");
         Serial.print(alarm_set_hour);
         Serial.print(" : ");
         Serial.println(alarm_set_minute);
-      }
-      if (alarm_active){
-        DateTime now = rtc.now();
-        
+
         Serial.print("cur time --> ");
         Serial.print(now.hour());
         Serial.print(" : ");
         Serial.println(now.minute());
 
-        if (alarm_active && alarm_set_hour >= now.hour() && alarm_set_minute >= now.minute()){
-          ringBell();
+        if (alarm_active && alarm_set_hour <= now.hour() && alarm_set_minute <= now.minute()){
+          ringBell(clkMode);
+          Serial.println("reseting data");
           alarm_set_hour = -1;
           alarm_set_minute = -1;
           alarm_active = false;

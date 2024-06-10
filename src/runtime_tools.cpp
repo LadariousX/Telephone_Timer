@@ -136,12 +136,13 @@ long set_timer_time(LinkedList<char> &inputList){   // timer
   return output;
 }
 
-void ringBell() {
+void ringBell(bool mode) {
   Serial.println("bell ringing");
   bool handle = true; // false = up
   int i = 0;
   long timestamp;
   while (handle && i<20){
+    print_Clock(mode);
     if (!digitalRead(PIN_switch)){break;}
     timestamp = millis();
     while (millis()-timestamp < 2000){
