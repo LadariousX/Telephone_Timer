@@ -12,7 +12,8 @@ long timer_time_set = 0;
 
 int rotarIn;
 bool clkMode = false; // timer init
-bool freshSettings = false;
+bool handle = false;
+bool prevHandle = false; //prev state bool for tracking and clearing changes
 
 void reset_list(){
   inputList.clear();
@@ -20,7 +21,6 @@ void reset_list(){
     inputList.add('_');
   }
 }
-
 
 
 void setup(){
@@ -34,15 +34,25 @@ void setup(){
   buildClocks();
 
   reset_list();
-  
+  alarm_time_set.clear();
+  alarm_time_set.add(0, -1);
+  alarm_time_set.add(1, -1);
+
+
   display.clearDisplay();
 }
 
 void loop() {
   epochTime = getEpochFromRTC();
   rotarIn = getRotar();
+  handle = digitalRead(PIN_switch);
 
-  if (!digitalRead(PIN_switch)){  // handset up, edit mode
+  if (handle == false && prevHandle == true){
+    // trans from display to edit mode
+    reset_list();
+  }
+
+  if (!handle){  // handset up, edit mode
     if(rotarIn != -1){ // add to list
       inputList.remove(0);
       inputList.add(4, ('0' + (rotarIn)));
@@ -57,12 +67,6 @@ void loop() {
 
 
   else{  // handset down, display mode
-    Serial.print(timer_time_set);
-    Serial.println(" <set ");
-    Serial.print(epochTime);
-    Serial.println(" <epoch ");
-
-
     if(!clkMode){ // timer mode
       if (inputList.get(4) != '_' && timer_time_set == 0){
         timer_time_set = set_timer_time(inputList);
@@ -73,13 +77,23 @@ void loop() {
         timer_time_set = 0;
         timer_active = false;
       }
-    } else {
+    } else { // alarm mode
       if (inputList.get(4) != '_' && alarm_time_set.get(0) == -1){
-        set_alarm_time(inputList);
+        alarm_time_set = set_alarm_time(inputList); 
         alarm_active = true;
+        Serial.print("set time --> ");
+        Serial.print(alarm_time_set.get(0));
+        Serial.print(" : ");
+        Serial.println(alarm_time_set.get(1));
       }
       if (alarm_active){
         DateTime now = rtc.now();
+        
+        Serial.print("cur time --> ");
+        Serial.print(now.hour());
+        Serial.print(" : ");
+        Serial.println(now.minute());
+
         if (alarm_active && alarm_time_set.get(0) >= now.hour() && alarm_time_set.get(1) >= now.minute()){
           ringBell();
           alarm_time_set.clear();
@@ -102,5 +116,6 @@ void loop() {
     print_Clock(clkMode);
     
   }
+  prevHandle = handle;
 }
 

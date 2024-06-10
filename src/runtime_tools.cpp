@@ -126,9 +126,14 @@ LinkedList<int> set_alarm_time(LinkedList<char> &inputList){ // alarm
     minute += (inputList.get(4) - '0');
     minute += (inputList.get(3) - '0') * 10;  
   }
-
+  
+  alarm_set.clear();
   alarm_set.add(0,hour);
   alarm_set.add(1,minute);
+
+  Serial.print(alarm_set.get(0));
+  Serial.print(",");
+  Serial.print(alarm_set.get(1));
   Serial.println("alarm has been set");
   return alarm_set;
 } 
@@ -156,20 +161,24 @@ long set_timer_time(LinkedList<char> &inputList){   // timer
   return output;
 }
 
-void ringBell(){
-  Serial.println("ringing bell!");
-  bool state = true;
+void ringBell() {
+  bool handle = true; // false = up
   int i = 0;
-
-  while (state && i < 20) {
+  long timestamp;
+  while (handle && i<20){
+    if (!digitalRead(PIN_switch)){break;}
+    timestamp = millis();
+    while (millis()-timestamp < 2000){
       digitalWrite(PIN_bell, HIGH);
-      delay(2000);
-      digitalWrite(PIN_bell, LOW);
-      delay(3000);
-
-      state = digitalRead(PIN_switch); // true = handset down
-      i++;
+      if (!digitalRead(PIN_switch)){break;}
+      delay(100);
     }
-    digitalWrite(PIN_bell, LOW);
-    Serial.println("done ringing");
+    timestamp = millis();
+    while (millis()-timestamp < 3000){
+      digitalWrite(PIN_bell, LOW);
+      if (!digitalRead(PIN_switch)){break;}
+      delay(100);
+    }
+    i++;
+  }
 }
