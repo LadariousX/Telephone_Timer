@@ -2,13 +2,14 @@
 #include <runtime_tools.h>
 
 LinkedList<char> inputList;
-LinkedList<int> alarm_time_set;
 
 bool timer_active = false;
 bool alarm_active = false;
 
 long epochTime;
 long timer_time_set = 0;
+int alarm_set_hour = -1;
+int alarm_set_minute = -1;
 
 int rotarIn;
 bool clkMode = false; // timer init
@@ -22,6 +23,26 @@ void reset_list(){
   }
 }
 
+void set_alarm_time(LinkedList<char> &inputList){ // alarm
+  LinkedList<int> alarm_time_set;
+  alarm_set_hour = 0;
+  alarm_set_minute = 0;
+  
+  if (inputList.get(2) != '_') { // _ : HH : MM
+    alarm_set_hour += (inputList.get(2) - '0');
+    if (inputList.get(1) != '_') {
+      alarm_set_hour += (inputList.get(1) - '0') * 10;
+    }
+    alarm_set_minute += (inputList.get(4) - '0');
+    alarm_set_minute += (inputList.get(3) - '0') * 10;  
+  }
+  
+  Serial.print(alarm_set_hour);
+  Serial.print(" , ");
+  Serial.print(alarm_set_minute);
+  Serial.println(" alarm has been set");
+} 
+
 
 void setup(){
   pinMode(PIN_bell, OUTPUT);
@@ -34,10 +55,6 @@ void setup(){
   buildClocks();
 
   reset_list();
-  alarm_time_set.clear();
-  alarm_time_set.add(0, -1);
-  alarm_time_set.add(1, -1);
-
 
   display.clearDisplay();
 }
@@ -73,32 +90,32 @@ void loop() {
         timer_active = true;
       }
       if (timer_active && timer_time_set <= epochTime){
-        ringBell();
+        ringBell(clkMode);
         timer_time_set = 0;
         timer_active = false;
       }
     } else { // alarm mode
-      if (inputList.get(4) != '_' && alarm_time_set.get(0) == -1){
-        alarm_time_set = set_alarm_time(inputList); 
+      if (inputList.get(4) != '_' && alarm_set_hour == -1){
+        set_alarm_time(inputList); 
         alarm_active = true;
-        Serial.print("set time --> ");
-        Serial.print(alarm_time_set.get(0));
-        Serial.print(" : ");
-        Serial.println(alarm_time_set.get(1));
       }
       if (alarm_active){
         DateTime now = rtc.now();
-        
+        Serial.print("set time --> ");
+        Serial.print(alarm_set_hour);
+        Serial.print(" : ");
+        Serial.println(alarm_set_minute);
+
         Serial.print("cur time --> ");
         Serial.print(now.hour());
         Serial.print(" : ");
         Serial.println(now.minute());
 
-        if (alarm_active && alarm_time_set.get(0) >= now.hour() && alarm_time_set.get(1) >= now.minute()){
-          ringBell();
-          alarm_time_set.clear();
-          alarm_time_set.set(0,-1);
-          alarm_time_set.set(1,-1);
+        if (alarm_active && alarm_set_hour <= now.hour() && alarm_set_minute <= now.minute()){
+          ringBell(clkMode);
+          Serial.println("reseting data");
+          alarm_set_hour = -1;
+          alarm_set_minute = -1;
           alarm_active = false;
         }
       }

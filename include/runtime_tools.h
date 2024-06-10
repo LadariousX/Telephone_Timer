@@ -11,10 +11,8 @@ void print_Clock(bool mode);
 
 void display_edit_mode(LinkedList<char> &inputList, bool mode);
 
-LinkedList<int> set_alarm_time(LinkedList<char> &inputList);
-
 long set_timer_time(LinkedList<char> &inputList);
 
-void ringBell();
+void ringBell(bool mode);
 
 #endif
