@@ -113,31 +113,6 @@ void display_edit_mode(LinkedList<char> &inputList, bool mode){ //print edit mod
   }
 }
 
-LinkedList<int> set_alarm_time(LinkedList<char> &inputList){ // alarm
-  LinkedList<int> alarm_set;
-  int hour = 0;
-  int minute = 0;
-  
-  if (inputList.get(2) != '_') { // _ : HH : MM
-    hour += (inputList.get(2) - '0');
-    if (inputList.get(1) != '_') {
-      hour += (inputList.get(1) - '0') * 10;
-    }
-    minute += (inputList.get(4) - '0');
-    minute += (inputList.get(3) - '0') * 10;  
-  }
-  
-  alarm_set.clear();
-  alarm_set.add(0,hour);
-  alarm_set.add(1,minute);
-
-  Serial.print(alarm_set.get(0));
-  Serial.print(",");
-  Serial.print(alarm_set.get(1));
-  Serial.println("alarm has been set");
-  return alarm_set;
-} 
-
 long set_timer_time(LinkedList<char> &inputList){   // timer
   long timerTime = getEpochFromRTC(); 
   long output = 0;
@@ -162,6 +137,7 @@ long set_timer_time(LinkedList<char> &inputList){   // timer
 }
 
 void ringBell() {
+  Serial.println("bell ringing");
   bool handle = true; // false = up
   int i = 0;
   long timestamp;
